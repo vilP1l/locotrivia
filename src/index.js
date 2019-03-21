@@ -39,7 +39,7 @@ export default class Loco {
     });
   }
 
-  ws() {
+  async ws() {
     const { broadcast } = await this.getShows();
     if (!broadcast) throw new Error('No game is currently active.');
     const ws = new WebSocket(broadcast.socketUrl, {

@@ -1,7 +1,7 @@
 {
-  "name": "loco",
+  "name": "locotrivia",
   "version": "1.0.0",
-  "main": "src/index.js",
+  "main": "lib/index.js",
   "license": "MIT",
   "dependencies": {
     "request": "^2.88.0",
