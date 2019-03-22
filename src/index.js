@@ -10,6 +10,7 @@ export default class Loco {
       'user-agent': 'Loco/252 CFNetwork/975.0.3 Darwin/18.2.0',
       'x-app-build': '252',
       'x-app-version': '252',
+      'x-client-id': 'fdioi34ufkenripoupouoer0783434',
     };
   }
 
@@ -17,9 +18,17 @@ export default class Loco {
     return `https://api.getloconow.com/v2/${endpoint}`
   }
 
+  getAuthToken() {
+    return new Promise(async (resolve) => {
+      const { token } = await this.getUserData();
+      this.headers['x-auth-token'] = token;
+      resolve(this.headers.token);
+    });
+  }
+
   getShows() {
     return new Promise((resolve) => {
-      request(this._buildUrl('contests'), {
+      request(this.buildUrl('contests'), {
         headers: this.headers,
       }, (err, res, body) => {
         const json = JSON.parse(body);
@@ -39,7 +48,135 @@ export default class Loco {
     });
   }
 
+  async getCoinBalance() {
+    await this.getAuthToken();
+    return new Promise((resolve) => {
+      request('https://api.getloconow.com/coin/v1/profile/', {
+        headers: this.headers,
+      }, (err, res, body) => {
+        const { current_coin_balance: balance, total_earned_coins: totalEarnedCoins } = JSON.parse(body);
+        resolve({
+          balance,
+          totalEarnedCoins
+        });
+      });
+    });
+  }
+
+  async getFriends() {
+    await this.getAuthToken();
+    return new Promise((resolve) => {
+      request('https://api.getloconow.com/social/v2/social/friends', {
+        headers: this.headers,
+      }, (err, res, body) => {
+        resolve(JSON.parse(body));
+      });
+    });
+  }
+
+  async getFriendRequests() {
+    await this.getAuthToken();
+    return new Promise((resolve) => {
+      request('https://api.getloconow.com/social/v2/social/friend_requests', {
+        headers: this.headers,
+      }, (err, res, body) => {
+        resolve(JSON.parse(body));
+      });
+    });
+  }
+
+  async acceptFriendRequest(userUID) {
+    await this.getAuthToken();
+    return new Promise((resolve) => {
+      request(this.buildUrl('social/accept_friend_request/'), {
+        headers: this.headers,
+        method: 'POST',
+        form: {
+          to_user_uid: userUID,
+        }
+      }, (err, res, body) => {
+        if (body === '') return resolve(false);
+        resolve(JSON.parse(body));
+      });
+    });
+  }
+
+  async sendFriendRequest(userUID) {
+    await this.getAuthToken();
+    return new Promise((resolve) => {
+      request(this.buildUrl('social/send_friend_request/'), {
+        headers: this.headers,
+        method: 'POST',
+        form: {
+          to_user_uid: userUID,
+        }
+      }, (err, res, body) => {
+        if (body === '') return resolve(false);
+        resolve(JSON.parse(body));
+      });
+    });
+  }
+
+  async searchUsers(query) {
+    await this.getAuthToken();
+    return new Promise((resolve) => {
+      request(`https://api.getloconow.com/social/v2/search/?q=${query}`, {
+        headers: this.headers,
+      }, (err, res, body) => {
+        console.log(body);
+        const json = JSON.parse(body);
+        if (json.message) return resolve({ error: json.message });
+        if (json.length === 1) return resolve(json[0]);
+        resolve(json);
+      });
+    });
+  }
+
+  async getBalance() {
+    await this.getAuthToken();
+    return new Promise((resolve) => {
+      request(`https://payments.getloconow.com/api/v2/wallet/me/`, {
+        headers: this.headers,
+      }, (err, res, body) => {
+        const { current_balance: balance, overall_earning: totalWinnings, weekly_earning: weeklyWinnings, is_money_redeem_enabled: canCashout } = JSON.parse(body);
+        resolve({
+          balance,
+          totalWinnings,
+          weeklyWinnings,
+          canCashout
+        })
+      });
+    });
+  }
+
+  async cashout(amount) {
+    if (!amount) throw new Error('No cashout amount was specified.');
+    await this.getAuthToken();
+    return new Promise((resolve) => {
+      request(`https://payments.getloconow.com/api/v1/redeem/`, {
+        headers: this.headers,
+        method: 'POST',
+        json: {
+          transaction_in: {
+            unit: 'inr',
+            value: amount.toString(),
+          },
+          transaction_out: {
+            unit: 'inr',
+            value: amount.toString(),
+          },
+          target_uid: 'paytm',
+        },
+      }, (err, res, body) => {
+        if (!body) return resolve(false);
+        if (body.error_code) return resolve({ error: body.message });
+        resolve(body);
+      });
+    });
+  }
+
   async ws() {
+    await this.getAuthToken();
     const { broadcast } = await this.getShows();
     if (!broadcast) throw new Error('No game is currently active.');
     const ws = new WebSocket(broadcast.socketUrl, {
