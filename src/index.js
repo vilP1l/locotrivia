@@ -177,9 +177,9 @@ export default class Loco {
 
   async ws() {
     await this.getAuthToken();
-    const { broadcast } = await this.getShows();
-    if (!broadcast) throw new Error('No game is currently active.');
-    const ws = new WebSocket(broadcast.socketUrl, {
+    const { active } = await this.getShows();
+    if (!active) throw new Error('No game is currently active.');
+    const ws = new WebSocket('https://realtime.getloconow.com', {
       headers: this.headers,
     });
     ws.onopen = () => {
