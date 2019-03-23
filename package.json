@@ -1,6 +1,6 @@
 {
   "name": "locotrivia",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "lib/index.js",
   "license": "MIT",
   "dependencies": {
@@ -11,6 +11,7 @@
     "@babel/cli": "^7.2.3",
     "@babel/core": "^7.4.0",
     "@babel/node": "^7.2.2",
+    "@babel/plugin-transform-classes": "^7.4.0",
     "babel-preset-airbnb": "^3.2.1"
   },
   "scripts": {
