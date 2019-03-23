@@ -1,10 +1,6 @@
 workflow "Publish to NPM" {
   on = "push"
-  resolves = [
-    "Publish",
-    "Increase version number",
-    "Git Config"
-  ]
+  resolves = ["Publish"]
 }
 
 action "Git Config" {
@@ -12,15 +8,16 @@ action "Git Config" {
   args = "git config --global user.email \"vil@vilp1l.co\""
 }
 
-action "Increase version number" {
+action "Bump version" {
   uses = "actions/npm@59b64a598378f31e49cb76f27d6f3312b582f680"
-  args = "version minor"
+  needs = ["Git Config"]
+  runs = "version minor"
   secrets = ["NPM_AUTH_TOKEN"]
 }
 
 action "Publish" {
   uses = "actions/npm@59b64a598378f31e49cb76f27d6f3312b582f680"
-  needs = ["Increase version number"]
+  needs = ["Bump version"]
   args = "publish --access public"
   secrets = ["NPM_AUTH_TOKEN"]
 }
