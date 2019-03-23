@@ -17,6 +17,8 @@ const loco = new Loco('auth token');
 
 ```
 
+**If you are using require (es5) you need to do `const loco = new Loco.default('auth token')`**
+
 ### Websocket Example
 
 ```js
