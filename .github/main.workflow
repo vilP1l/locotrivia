@@ -3,10 +3,11 @@ workflow "Publish to NPM" {
   resolves = [
     "Publish",
     "Increase version number",
+    "Git Config"
   ]
 }
 
-action "git command" {
+action "Git Config" {
   uses = "srt32/git-actions@v0.0.3"
   args = "git config --global user.email \"vil@vilp1l.co\""
 }
