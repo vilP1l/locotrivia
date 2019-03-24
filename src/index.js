@@ -123,7 +123,6 @@ export default class Loco {
       request(`https://api.getloconow.com/social/v2/search/?q=${query}`, {
         headers: this.headers,
       }, (err, res, body) => {
-        console.log(body);
         const json = JSON.parse(body);
         if (json.message) return resolve({ error: json.message });
         if (json.length === 1) return resolve(json[0]);
