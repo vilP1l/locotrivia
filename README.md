@@ -21,8 +21,6 @@ const loco = new Loco('auth token');
 
 ### Websocket Example
 
-## ~~**NOTE** ws() is currently broken. The below code will not work at this time~~ IT MIGHT BE FIXED IDK
-
 ```js
 
 import Loco from 'locotrivia'; // or const Loco = require('locotrivia');

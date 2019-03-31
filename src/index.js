@@ -22,7 +22,7 @@ export default class Loco {
     return new Promise(async (resolve) => {
       const { token } = await this.getUserData();
       this.headers['x-auth-token'] = token;
-      resolve(this.headers.token);
+      resolve(token);
     });
   }
 
@@ -175,12 +175,16 @@ export default class Loco {
   }
 
   async getSID() {
-    await this.getAuthToken();
+    const headers = {
+      authorization: `Bearer ${await this.getAuthToken()}`,
+    };
     return new Promise((resolve) => {
-      request('https://realtime.getloconow.com/v2/?EIO=3&transport=polling', (err, res, body) => {
+      request('https://realtime.getloconow.com/v2/?EIO=3&transport=polling', { headers }, (err, res, body) => {
         body = body.replace('96:0', '');
         const { sid } = JSON.parse(body);
-        resolve(sid);
+        request(`https://realtime.getloconow.com/v2/?EIO=3&sid=${sid}&transport=polling`, { headers }, (err, res, body) => {
+          resolve(sid);
+        });
       });
     });
   }
@@ -188,14 +192,19 @@ export default class Loco {
   async ws() {
     await this.getAuthToken();
     const { active } = await this.getShows();
-    if (!active) throw new Error('No game is currently active.');
+    // if (!active) throw new Error('No game is currently active.');
+    const headers = {
+      authorization: `Bearer ${await this.getAuthToken()}`,
+    };
     const ws = new WebSocket(`wss://realtime.getloconow.com/v2/?EIO=3&sid=${await this.getSID()}&transport=websocket`, {
-      headers: this.headers,
+      headers,
     });
     ws.onopen = () => {
+      ws.send('2probe');
+      ws.send('5');
       const i = setInterval(() => {
         if (ws.readyState !== ws.OPEN) return clearInterval(i);
-        ws.ping();
+        ws.send('2');
       }, 5000);
     };
     return ws;
