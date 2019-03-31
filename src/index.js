@@ -174,11 +174,22 @@ export default class Loco {
     });
   }
 
+  async getSID() {
+    await this.getAuthToken();
+    return new Promise((resolve) => {
+      request('https://realtime.getloconow.com/v2/?EIO=3&transport=polling', (err, res, body) => {
+        body = body.replace('96:0', '');
+        const { sid } = JSON.parse(body);
+        resolve(sid);
+      });
+    });
+  }
+
   async ws() {
     await this.getAuthToken();
     const { active } = await this.getShows();
     if (!active) throw new Error('No game is currently active.');
-    const ws = new WebSocket('https://realtime.getloconow.com', {
+    const ws = new WebSocket(`wss://realtime.getloconow.com/v2/?EIO=3&sid=${await this.getSID()}&transport=websocket`, {
       headers: this.headers,
     });
     ws.onopen = () => {
