@@ -206,4 +206,42 @@ export default class Loco {
     };
     return ws;
   }
+
+  parseWSMessage(msg) {
+    console.log(msg);
+    if (msg === '3') return { type: 'pong' };
+    if (msg === '3probe') return { type: '3probe' };
+    if (msg.match(/\[(.*)/g)) {
+      if (msg.match(/(\s|\w|\?)"(\s|\w|\?)/g)) {
+        for (const res of msg.match(/(\s|\w|\?)"(\s|\w|\?)/g)) {
+          console.log(res);
+          msg = msg.replace(/(\s|\w|\?)"(\s|\w|\?)/, res.replace(/"/g, '\\"'));
+        }
+      }
+      const data = msg.match(/\[(.*)/g)[0];
+      const json = JSON.parse(data);
+      if (json[0] === 'count_change') {
+        json[1].type = 'count_change';
+        return json[1];
+      } else if (json[0] === 'question') {
+        return {
+          type: 'question',
+          question: json[1].text,
+          id: json[1].uid,
+          questionType: json[1].question_type,
+          answers: [
+            { id: json[1].options[0].uid, text: json[1].options[0].text },
+            { id: json[1].options[1].uid, text: json[1].options[1].text },
+            { id: json[1].options[2].uid, text: json[1].options[2].text },
+          ],
+          rewardCoins: json[1].reward_coins,
+          questionNumber: json[1].question_rank,
+          inTheGame: json[1].is_allowed_to_answer,
+        };
+      } else {
+        json[1].type = json[0];
+        return json[1];
+      }
+    }
+  }
 }
