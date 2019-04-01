@@ -190,9 +190,6 @@ export default class Loco {
   }
 
   async ws() {
-    await this.getAuthToken();
-    const { active } = await this.getShows();
-    // if (!active) throw new Error('No game is currently active.');
     const headers = {
       authorization: `Bearer ${await this.getAuthToken()}`,
     };

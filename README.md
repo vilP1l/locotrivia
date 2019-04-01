@@ -28,12 +28,11 @@ import WebSocket from 'ws'; // or const WebSocket = require('ws');
 
 const loco = new Loco('auth token');
 
-loco.getShows().then((shows) => {
+loco.getShows().then(async (shows) => {
   if (shows.active) {
-    const ws = loco.ws();
+    const ws = await loco.ws();
     ws.onmessage = (msg) => {
-      const json = JSON.parse(msg.data);
-      console.log(json);
+      console.log(msg.data);
     };
     // locotrivia handles .on('open') or .onopen for you
   } else console.log('Loco is not live.');
