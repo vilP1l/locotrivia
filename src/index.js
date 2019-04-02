@@ -10,7 +10,6 @@ export default class Loco {
       'user-agent': 'Loco/252 CFNetwork/975.0.3 Darwin/18.2.0',
       'x-app-build': '252',
       'x-app-version': '252',
-      'x-client-id': 'fdioi34ufkenripoupouoer0783434',
     };
   }
 
@@ -31,6 +30,7 @@ export default class Loco {
       request(this.buildUrl('contests'), {
         headers: this.headers,
       }, (err, res, body) => {
+        if (body.includes('<')) return this.getShows();
         const json = JSON.parse(body);
         json.start_time > Date.now() ? json.active = false : json.active = true;
         resolve(json);
