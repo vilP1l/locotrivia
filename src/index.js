@@ -238,6 +238,25 @@ export default class Loco {
           questionNumber: json[1].question_rank,
           inTheGame: json[1].is_allowed_to_answer,
         };
+      } else if (json[0] === 'status') {
+        return {
+          type: 'questionSummary',
+          questionId: json[1].question_uid,
+          correctAnswerId: json[1].question_stats.correct_option_uid,
+          answers: [
+            { id: json[1].question_stats.answer_dist[0].option_uid, answerCount: json[1].question_stats.answer_dist[0].count },
+            { id: json[1].question_stats.answer_dist[1].option_uid, answerCount: json[1].question_stats.answer_dist[1].count },
+            { id: json[1].question_stats.answer_dist[2].option_uid, answerCount: json[1].question_stats.answer_dist[2].count },
+          ],
+          totalAnswers: json[1].question_stats.total_answer,
+          extraLifeUsed: json[1].user_contest_status.is_extra_life_used,
+          isCorrect: json[1].user_contest_status.is_correct,
+          totalCorrectAnswers: Number(json[1].user_contest_status.total_correct_answers),
+          totalCoins: json[1].user_contest_status.current_coins,
+          canRevive: json[1].revival_status.can_revive,
+          reviveCost: json[1].revival_status.coins_required,
+          coinsAfterRevive: json[1].revival_status.coins_after_revival
+        };
       } else {
         json[1].type = json[0];
         return json[1];
