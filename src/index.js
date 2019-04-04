@@ -191,11 +191,11 @@ export default class Loco {
 
   async ws() {
     const headers = {
-      authorization: `Bearer ${await this.getAuthToken()}`,
+      Authorization: `Bearer ${await this.getAuthToken()}`,
+      Upgrade: 'websocket',
+      Connection: 'Upgrade'
     };
-    const ws = new WebSocket(`wss://realtime.getloconow.com/v2/?EIO=3&sid=${await this.getSID()}&transport=websocket`, {
-      headers,
-    });
+    const ws = new WebSocket(`wss://realtime.getloconow.com/v2/?EIO=3&sid=${await this.getSID()}&transport=websocket`, { headers });
     ws.onopen = () => {
       ws.send('2probe');
       ws.send('5');
@@ -208,13 +208,11 @@ export default class Loco {
   }
 
   parseWSMessage(msg) {
-    console.log(msg);
     if (msg === '3') return { type: 'pong' };
     if (msg === '3probe') return { type: '3probe' };
     if (msg.match(/\[(.*)/g)) {
       if (msg.match(/(\s|\w|\?)"(\s|\w|\?)/g)) {
         for (const res of msg.match(/(\s|\w|\?)"(\s|\w|\?)/g)) {
-          console.log(res);
           msg = msg.replace(/(\s|\w|\?)"(\s|\w|\?)/, res.replace(/"/g, '\\"'));
         }
       }
