@@ -32,6 +32,7 @@ export default class Loco {
       }, (err, res, body) => {
         if (body.includes('<')) return this.getShows();
         const json = JSON.parse(body);
+        json.start_time -= 300000; // start time is usually right at q1
         json.start_time > Date.now() ? json.active = false : json.active = true;
         resolve(json);
       });
