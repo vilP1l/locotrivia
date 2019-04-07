@@ -4,7 +4,7 @@ import WebSocket from 'ws';
 export default class Loco {
   constructor(auth) {
     if (!auth) throw new Error('No authentication token was provided.');
-    this.bearer = `Bearer ${auth}`
+    this.bearer = `Bearer ${auth}`;
     this.headers = {
       authorization: this.bearer,
       'user-agent': 'Loco/252 CFNetwork/975.0.3 Darwin/18.2.0',
@@ -14,7 +14,7 @@ export default class Loco {
   }
 
   buildUrl(endpoint) {
-    return `https://api.getloconow.com/v2/${endpoint}`
+    return `https://api.getloconow.com/v2/${endpoint}`;
   }
 
   getAuthToken() {
@@ -33,8 +33,9 @@ export default class Loco {
         if (body.includes('<')) return this.getShows();
         const json = JSON.parse(body);
         json.start_time -= 300000; // start time is usually right at q1
+        // eslint-disable-next-line no-unused-expressions
         json.start_time > Date.now() ? json.active = false : json.active = true;
-        resolve(json);
+        return resolve(json);
       });
     });
   }
@@ -55,10 +56,13 @@ export default class Loco {
       request('https://api.getloconow.com/coin/v1/profile/', {
         headers: this.headers,
       }, (err, res, body) => {
-        const { current_coin_balance: balance, total_earned_coins: totalEarnedCoins } = JSON.parse(body);
+        const {
+          current_coin_balance: balance,
+          total_earned_coins: totalEarnedCoins,
+        } = JSON.parse(body);
         resolve({
           balance,
-          totalEarnedCoins
+          totalEarnedCoins,
         });
       });
     });
@@ -94,10 +98,10 @@ export default class Loco {
         method: 'POST',
         form: {
           to_user_uid: userUID,
-        }
+        },
       }, (err, res, body) => {
         if (body === '') return resolve(false);
-        resolve(JSON.parse(body));
+        return resolve(JSON.parse(body));
       });
     });
   }
@@ -110,10 +114,10 @@ export default class Loco {
         method: 'POST',
         form: {
           to_user_uid: userUID,
-        }
+        },
       }, (err, res, body) => {
         if (body === '') return resolve(false);
-        resolve(JSON.parse(body));
+        return resolve(JSON.parse(body));
       });
     });
   }
@@ -127,7 +131,7 @@ export default class Loco {
         const json = JSON.parse(body);
         if (json.message) return resolve({ error: json.message });
         if (json.length === 1) return resolve(json[0]);
-        resolve(json);
+        return resolve(json);
       });
     });
   }
@@ -135,16 +139,21 @@ export default class Loco {
   async getBalance() {
     await this.getAuthToken();
     return new Promise((resolve) => {
-      request(`https://payments.getloconow.com/api/v2/wallet/me/`, {
+      request('https://payments.getloconow.com/api/v2/wallet/me/', {
         headers: this.headers,
       }, (err, res, body) => {
-        const { current_balance: balance, overall_earning: totalWinnings, weekly_earning: weeklyWinnings, is_money_redeem_enabled: canCashout } = JSON.parse(body);
+        const {
+          current_balance: balance,
+          overall_earning: totalWinnings,
+          weekly_earning: weeklyWinnings,
+          is_money_redeem_enabled: canCashout,
+        } = JSON.parse(body);
         resolve({
           balance,
           totalWinnings,
           weeklyWinnings,
-          canCashout
-        })
+          canCashout,
+        });
       });
     });
   }
@@ -153,7 +162,7 @@ export default class Loco {
     if (!amount) throw new Error('No cashout amount was specified.');
     await this.getAuthToken();
     return new Promise((resolve) => {
-      request(`https://payments.getloconow.com/api/v1/redeem/`, {
+      request('https://payments.getloconow.com/api/v1/redeem/', {
         headers: this.headers,
         method: 'POST',
         json: {
@@ -170,7 +179,7 @@ export default class Loco {
       }, (err, res, body) => {
         if (!body) return resolve(false);
         if (body.error_code) return resolve({ error: body.message });
-        resolve(body);
+        return resolve(body);
       });
     });
   }
@@ -183,7 +192,7 @@ export default class Loco {
       request('https://realtime.getloconow.com/v2/?EIO=3&transport=polling', { headers }, (err, res, body) => {
         body = body.replace('96:0', '');
         const { sid } = JSON.parse(body);
-        request(`https://realtime.getloconow.com/v2/?EIO=3&sid=${sid}&transport=polling`, { headers }, (err, res, body) => {
+        request(`https://realtime.getloconow.com/v2/?EIO=3&sid=${sid}&transport=polling`, { headers }, () => {
           resolve(sid);
         });
       });
@@ -194,7 +203,7 @@ export default class Loco {
     const headers = {
       Authorization: `Bearer ${await this.getAuthToken()}`,
       Upgrade: 'websocket',
-      Connection: 'Upgrade'
+      Connection: 'Upgrade',
     };
     const ws = new WebSocket(`wss://realtime.getloconow.com/v2/?EIO=3&sid=${await this.getSID()}&transport=websocket`, { headers });
     ws.onopen = () => {
@@ -202,7 +211,7 @@ export default class Loco {
       ws.send('5');
       const i = setInterval(() => {
         if (ws.readyState !== ws.OPEN) return clearInterval(i);
-        ws.send('2');
+        return ws.send('2');
       }, 5000);
     };
     return ws;
@@ -222,7 +231,8 @@ export default class Loco {
       if (json[0] === 'count_change') {
         json[1].type = 'count_change';
         return json[1];
-      } else if (json[0] === 'question') {
+      }
+      if (json[0] === 'question') {
         return {
           type: 'question',
           question: json[1].text,
@@ -237,15 +247,25 @@ export default class Loco {
           questionNumber: json[1].question_rank,
           inTheGame: json[1].is_allowed_to_answer,
         };
-      } else if (json[0] === 'status') {
+      }
+      if (json[0] === 'status') {
         return {
           type: 'questionSummary',
           questionId: json[1].question_uid,
           correctAnswerId: json[1].question_stats.correct_option_uid,
           answers: [
-            { id: json[1].question_stats.answer_dist[0].option_uid, answerCount: json[1].question_stats.answer_dist[0].count },
-            { id: json[1].question_stats.answer_dist[1].option_uid, answerCount: json[1].question_stats.answer_dist[1].count },
-            { id: json[1].question_stats.answer_dist[2].option_uid, answerCount: json[1].question_stats.answer_dist[2].count },
+            {
+              id: json[1].question_stats.answer_dist[0].option_uid,
+              answerCount: json[1].question_stats.answer_dist[0].count,
+            },
+            {
+              id: json[1].question_stats.answer_dist[1].option_uid,
+              answerCount: json[1].question_stats.answer_dist[1].count,
+            },
+            {
+              id: json[1].question_stats.answer_dist[2].option_uid,
+              answerCount: json[1].question_stats.answer_dist[2].count,
+            },
           ],
           totalAnswers: json[1].question_stats.total_answer,
           extraLifeUsed: json[1].user_contest_status.is_extra_life_used,
@@ -254,12 +274,13 @@ export default class Loco {
           totalCoins: json[1].user_contest_status.current_coins,
           canRevive: json[1].revival_status.can_revive,
           reviveCost: json[1].revival_status.coins_required,
-          coinsAfterRevive: json[1].revival_status.coins_after_revival
+          coinsAfterRevive: json[1].revival_status.coins_after_revival,
         };
-      } else {
-        json[1].type = json[0];
-        return json[1];
       }
+      // eslint-disable-next-line prefer-destructuring
+      json[1].type = json[0];
+      return json[1];
     }
+    return msg;
   }
 }
