@@ -239,9 +239,18 @@ export default class Loco {
           id: json[1].uid,
           questionType: json[1].question_type,
           answers: [
-            { id: json[1].options[0].uid, text: json[1].options[0].text },
-            { id: json[1].options[1].uid, text: json[1].options[1].text },
-            { id: json[1].options[2].uid, text: json[1].options[2].text },
+            {
+              id: json[1].options[json[1].options[0].rank].uid,
+              text: json[1].options[json[1].options[0].rank].text,
+            },
+            {
+              id: json[1].options[json[1].options[1].rank].uid,
+              text: json[1].options[json[1].options[1].rank].text,
+            },
+            {
+              id: json[1].options[json[1].options[2].rank].uid,
+              text: json[1].options[json[1].options[2].rank].text,
+            },
           ],
           rewardCoins: json[1].reward_coins,
           questionNumber: json[1].question_rank,
