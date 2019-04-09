@@ -91,6 +91,7 @@ export default class Loco {
   }
 
   async acceptFriendRequest(userUID) {
+    if (!userUID) throw new Error('No user id was provided.');
     await this.getAuthToken();
     return new Promise((resolve) => {
       request(this.buildUrl('social/accept_friend_request/'), {
@@ -107,6 +108,7 @@ export default class Loco {
   }
 
   async sendFriendRequest(userUID) {
+    if (!userUID) throw new Error('No user id was provided.');
     await this.getAuthToken();
     return new Promise((resolve) => {
       request(this.buildUrl('social/send_friend_request/'), {
@@ -123,6 +125,7 @@ export default class Loco {
   }
 
   async searchUsers(query) {
+    if (!query) throw new Error('No query was provided.');
     await this.getAuthToken();
     return new Promise((resolve) => {
       request(`https://api.getloconow.com/social/v2/search/?q=${query}`, {
