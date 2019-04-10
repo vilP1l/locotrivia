@@ -217,6 +217,7 @@ export default class Loco {
         return ws.send('2');
       }, 5000);
     };
+    this.WebSocket = ws;
     return ws;
   }
 
@@ -294,5 +295,13 @@ export default class Loco {
       return json[1];
     }
     return msg;
+  }
+
+  async submitAnswer(questionID, choiceID, showID) {
+    if (!this.WebSocket || !this.WebSocket.readyState || !this.WebSocket.send || this.WebSocket.readyState === this.WebSocket.CLOSED) throw new Error('No websocket connection is active.');
+    if (!questionID) throw new Error('No question id was provided.');
+    if (!choiceID) throw new Error('No answer id was provided.');
+    if (!showID) throw new Error('No show id was provided.');
+    this.WebSocket.send(`42["answer",{"question_uid":"${questionID}","option_uid":"${choiceID}","contest_id":"${showID}"}]`);
   }
 }
