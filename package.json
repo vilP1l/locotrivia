@@ -2,7 +2,7 @@
   "name": "locotrivia",
   "version": "1.2.0",
   "main": "lib/index.js",
-  "types": "index.d.ts",
+  "types": "lib/index.d.ts",
   "license": "MIT",
   "dependencies": {
     "request": "^2.88.0",
