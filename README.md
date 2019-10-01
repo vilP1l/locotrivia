@@ -1,6 +1,6 @@
 # LocoTrivia
 
-This is a javascript wrapper for [loco trivia](https://getloconow.com). This is still in development and new features will be added over time.
+This is a javascript wrapper for [loco trivia](https://getloconow.com). This package is no longer maintained. Features may still work.
 
 ## Installation
 
